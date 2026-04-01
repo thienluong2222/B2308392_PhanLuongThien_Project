@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const ApiError = require('./app/api-error');
 const nhaxuatbanRoute = require('./app/routes/nhaxuatban.route')
+const sachRoute = require('./app/routes/sach.route')
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/nhaxuatban', nhaxuatbanRoute);
+app.use('/api/sach', sachRoute);
 
 app.use((req, res, next) => {
     return next(new ApiError(404, 'Resource not found'))
