@@ -62,6 +62,7 @@ exports.login = async (req, res, next) => {
             message: "Đăng nhập thành công",
             token: token,
             docGia: {
+                _id: docGia._id,
                 maDocGia: docGia.maDocGia,
                 hoTen: docGia.hoTen,
                 tenTaiKhoan: docGia.tenTaiKhoan
