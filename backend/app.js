@@ -5,6 +5,8 @@ const nhaxuatbanRoute = require('./app/routes/nhaxuatban.route');
 const sachRoute = require('./app/routes/sach.route');
 const docgiaRoute = require('./app/routes/docgia.route');
 const nhanvienRoute = require('./app/routes/nhanvien.route')
+const theodoiRoute = require('./app/routes/theodoimuonsach.route')
+
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.use('/api/nhaxuatban', nhaxuatbanRoute);
 app.use('/api/sach', sachRoute);
 app.use('/api/docgia', docgiaRoute)
 app.use('/api/nhanvien', nhanvienRoute);
+app.use('/api/theodoimuonsach', theodoiRoute);
 
 app.use((req, res, next) => {
     return next(new ApiError(404, 'Resource not found'))
