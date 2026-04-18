@@ -20,4 +20,9 @@ router.route("/:id/yeu-cau-tra")
 router.route("/:id/duyet-tra")
     .put(theodoi.duyetTraSach);
 
+
+// Admin: Gia hạn ngày trả
+router.route("/:id/gia-han")
+    .put(theodoi.giaHanSach);
+
 module.exports = router;

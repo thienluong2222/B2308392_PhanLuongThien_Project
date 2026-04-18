@@ -11,6 +11,15 @@ class TheoDoiMuonSachService {
     // 1. ĐỘC GIẢ gửi yêu cầu mượn
     async yeuCauMuonSach(payload) {
         const { maDocGia, maSach } = payload;
+        // BLOCK: KHÓA MƯỢN NẾU ĐANG CÓ SÁCH TRỄ HẠN
+        const now = new Date();
+        const quaHan = await this.TheoDoiMuonSach.findOne({
+            maDocGia: maDocGia,
+            trangThai: { $in: [1, 3] }, // Đang mượn hoặc chờ nhận lại (chưa trả xong)
+            hanTra: { $lt: now }
+        });
+        if (quaHan) throw new Error("Thẻ độc giả đang bị tạm khóa do có sách chưa trả đã quá hạn. Vui lòng thanh toán trễ hạn trước!");
+
         const sach = await this.Sach.findOne({ maSach: maSach });
 
         if (!sach) throw new Error("Không tìm thấy sách");
@@ -20,12 +29,13 @@ class TheoDoiMuonSachService {
         const phieuMuon = {
             maDocGia: maDocGia,
             maSach: maSach,
+            hanTra: payload.ngayHenTraDuKien ? new Date(payload.ngayHenTraDuKien) : null, // Lưu ngày hẹn trả độc giả chọn
             msnv: null, // Chưa gán nhân viên duyệt
             ngayTao: new Date(),
             ngayMuon: null,
-            hanTra: null,
+            
             ngayTra: null,
-            trangThai: 0 // <--- CHỜ DUYỆT MƯỢN
+            trangThai: 0 
         };
 
         const result = await this.TheoDoiMuonSach.insertOne(phieuMuon);
@@ -55,16 +65,15 @@ class TheoDoiMuonSachService {
     // ================== HÀNH ĐỘNG CỦA NHÂN VIÊN (ADMIN) ==================
 
     // 3. NHÂN VIÊN phê duyệt cho mượn (Hoặc từ chối)
-    async duyetMuonSach(idTheoDoi, msnv, isDuyet) {
+    async duyetMuonSach(idTheoDoi, msnv, isDuyet, hanTraChinhThuc) {
         const filter = {
             _id: ObjectId.isValid(idTheoDoi) ? new ObjectId(idTheoDoi) : null,
             trangThai: 0 // Chỉ duyệt phiếu đang Chờ duyệt mượn
         };
 
-        if (isDuyet) { // NẾU ĐỒNG Ý
+        if (isDuyet) {
             const ngayMuon = new Date();
-            const hanTra = new Date(ngayMuon);
-            hanTra.setDate(hanTra.getDate() + 7); // Tính hạn trả 7 ngày
+            let hanTra = hanTraChinhThuc ? new Date(hanTraChinhThuc) : new Date(ngayMuon.getTime() + 7*24*60*60*1000);
 
             const phieu = await this.TheoDoiMuonSach.findOneAndUpdate(
                 filter,
@@ -73,7 +82,7 @@ class TheoDoiMuonSachService {
             );
             if (!phieu) throw new Error("Phiếu mượn không tồn tại hoặc đã được xử lý");
             return phieu;
-        } else { // NẾU TỪ CHỐI
+        } else {
             const phieu = await this.TheoDoiMuonSach.findOneAndUpdate(
                 filter,
                 { $set: { trangThai: 2, msnv: msnv } } // 2: TỪ CHỐI
@@ -116,8 +125,36 @@ class TheoDoiMuonSachService {
         throw new Error("Không thể xử lý trả sách");
     }
 
+    
+    // 5. GIA HẠN NHANH TỪ ADMIN
+    async giaHanSach(idTheoDoi, hanTraMoi) {
+        const filter = {
+            _id: ObjectId.isValid(idTheoDoi) ? new ObjectId(idTheoDoi) : null,
+            trangThai: 1 // Chỉ phiếu đang mượn mới gia hạn được
+        };
+        const result = await this.TheoDoiMuonSach.findOneAndUpdate(
+            filter,
+            { $set: { hanTra: new Date(hanTraMoi) } },
+            { returnDocument: "after" }
+        );
+        if (!result) throw new Error("Không tìm thấy phiếu đang mượn hợp lệ");
+        return result;
+    }
+
     async find(filter) {
-        const cursor = await this.TheoDoiMuonSach.find(filter);
+        const pipeline = [
+            { $match: filter },
+            { $lookup: { from: "Sach", localField: "maSach", foreignField: "maSach", as: "sach" } },
+            { $lookup: { from: "DocGia", localField: "maDocGia", foreignField: "maDocGia", as: "docGia" } },
+            { $unwind: { path: "$sach", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$docGia", preserveNullAndEmptyArrays: true } },
+            { $addFields: { 
+                tenSach: "$sach.tenSach", 
+                tenDocGia: "$docGia.hoTen" 
+            } },
+            { $project: { sach: 0, docGia: 0 } }
+        ];
+        const cursor = await this.TheoDoiMuonSach.aggregate(pipeline);
         return await cursor.toArray();
     }
 }

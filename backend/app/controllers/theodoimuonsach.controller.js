@@ -42,10 +42,12 @@ exports.duyetMuonSach = async (req, res, next) => {
 
     try {
         const theodoiService = new TheoDoiMuonSachService(MongoDB.client);
+        const hanTraChinhThuc = req.body.hanTraMoi; // Admin truyền ngày lên
         const result = await theodoiService.duyetMuonSach(
             req.params.id, 
             req.body.msnv, 
-            req.body.isDuyet
+            req.body.isDuyet,
+            hanTraChinhThuc
         );
         
         const message = req.body.isDuyet 
@@ -95,4 +97,13 @@ exports.findAll = async (req, res, next) => {
     } catch (error) {
         return next(new ApiError(500, "Lỗi khi lấy danh sách mượn sách"));
     }
+};
+// 6. GIA HẠN SÁCH
+exports.giaHanSach = async (req, res, next) => {
+    if (!req.body?.hanTraMoi) return next(new ApiError(400, "Phải cung cấp ngày gia hạn"));
+    try {
+        const theodoiService = new TheoDoiMuonSachService(MongoDB.client);
+        await theodoiService.giaHanSach(req.params.id, req.body.hanTraMoi);
+        return res.send({ message: "Gia hạn thành công" });
+    } catch(err) { return next(new ApiError(400, err.message)); }
 };

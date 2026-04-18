@@ -1,13 +1,29 @@
 <template>
     <div>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold mb-0">📚 Quản Lý Độc Giả</h3>
-            <button
-                class="btn btn-primary px-4 shadow-sm"
-                @click="openModal(null)"
-            >
-                <i class="bi bi-person-plus-fill me-2"></i>Thêm Thẻ Độc Giả
-            </button>
+            <h3 class="fw-bold mb-0">Quản Lý Độc Giả</h3>
+            
+            <div class="d-flex gap-3">
+                <!-- Thanh Tìm Kiếm -->
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text bg-white border-end-0 border-light modern-shadow">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input 
+                        type="text" 
+                        class="form-control border-start-0 border-light modern-shadow ps-0" 
+                        placeholder="Tìm theo Mã, Họ Tên, SĐT..." 
+                        v-model="searchQuery"
+                    >
+                </div>
+
+                <button
+                    class="btn btn-primary px-4 shadow-sm text-nowrap"
+                    @click="openModal(null)"
+                >
+                    <i class="bi bi-person-plus-fill me-2"></i>Thêm Độc Giả
+                </button>
+            </div>
         </div>
 
         <!-- Bảng danh sách Độc Giả -->
@@ -25,7 +41,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="dg in readers" :key="dg._id">
+                            <tr v-for="dg in filteredReaders" :key="dg._id">
                                 <td class="ps-4 fw-bold text-secondary">
                                     {{ dg.maDocGia }}
                                 </td>
@@ -159,12 +175,24 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import docGiaService from "../../services/docgia.service";
 
 export default {
     setup() {
         const readers = ref([]);
+        const searchQuery = ref("");
+        
+        const filteredReaders = computed(() => {
+            if (!searchQuery.value) return readers.value;
+            const q = searchQuery.value.toLowerCase().trim();
+            return readers.value.filter(dg => 
+                (dg.maDocGia || '').toLowerCase().includes(q) ||
+                (dg.hoTen || '').toLowerCase().includes(q) ||
+                (dg.tenTaiKhoan || '').toLowerCase().includes(q) ||
+                (dg.dienThoai || '').toLowerCase().includes(q)
+            );
+        });
         const showModal = ref(false);
         const isEdit = ref(false);
         const currentId = ref(null);
@@ -222,6 +250,8 @@ export default {
         onMounted(fetchReaders);
         return {
             readers,
+            searchQuery,
+            filteredReaders,
             showModal,
             isEdit,
             formData,

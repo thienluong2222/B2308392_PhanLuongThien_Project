@@ -1,13 +1,29 @@
 <template>
     <div>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold mb-0">💼 Quản Lý Nhân Viên</h3>
-            <button
-                class="btn btn-primary px-4 shadow-sm"
-                @click="openModal(null)"
-            >
-                <i class="bi bi-person-badge me-2"></i>Thêm Nhân Viên
-            </button>
+            <h3 class="fw-bold mb-0">Quản Lý Nhân Viên</h3>
+            
+            <div class="d-flex gap-3">
+                <!-- Thanh Tìm Kiếm -->
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text bg-white border-end-0 border-light modern-shadow">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input 
+                        type="text" 
+                        class="form-control border-start-0 border-light modern-shadow ps-0" 
+                        placeholder="Tìm theo Mã NV, Họ Tên, Chức vụ..." 
+                        v-model="searchQuery"
+                    >
+                </div>
+
+                <button
+                    class="btn btn-primary px-4 shadow-sm text-nowrap"
+                    @click="openModal(null)"
+                >
+                    <i class="bi bi-person-badge me-2"></i>Thêm Nhân Viên
+                </button>
+            </div>
         </div>
 
         <!-- Bảng danh sách Nhân Viên -->
@@ -25,7 +41,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="nv in staffs" :key="nv._id">
+                            <tr v-for="nv in filteredStaffs" :key="nv._id">
                                 <td class="ps-4 fw-bold text-secondary">
                                     {{ nv.MSNV }}
                                 </td>
@@ -153,12 +169,23 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import nhanVienService from "../../services/nhanvien.service";
 
 export default {
     setup() {
         const staffs = ref([]);
+        const searchQuery = ref("");
+        
+        const filteredStaffs = computed(() => {
+            if (!searchQuery.value) return staffs.value;
+            const q = searchQuery.value.toLowerCase().trim();
+            return staffs.value.filter(nv => 
+                (nv.MSNV || '').toLowerCase().includes(q) ||
+                (nv.HoTenNV || '').toLowerCase().includes(q) ||
+                (nv.ChucVu || '').toLowerCase().includes(q)
+            );
+        });
         const showModal = ref(false);
         const isEdit = ref(false);
         const currentId = ref(null);
@@ -183,7 +210,7 @@ export default {
                     MSNV: "",
                     HoTenNV: "",
                     Password: "",
-                    ChucVu: "Thủ Thư",
+                    ChucVu: "Admin",
                 };
             }
             showModal.value = true;
@@ -214,6 +241,8 @@ export default {
         onMounted(fetchStaffs);
         return {
             staffs,
+            searchQuery,
+            filteredStaffs,
             showModal,
             isEdit,
             formData,

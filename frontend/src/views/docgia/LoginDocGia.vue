@@ -185,7 +185,6 @@ export default {
         const errorMessage = ref("");
         const successMessage = ref("");
 
-        // State 2 form tách biệt
         const loginUser = reactive({ tenTaiKhoan: "", matKhau: "" });
         const registerUser = reactive({
             maDocGia: "",

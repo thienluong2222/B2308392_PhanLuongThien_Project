@@ -63,6 +63,12 @@
                     </div>
                 </div>
 
+                <!-- Hẹn ngày trả gốc (Độc giả yêu cầu) -->
+                <div class="mb-4 d-flex align-items-center">
+                    <label class="fw-bold me-3 text-dark mb-0">Hẹn trả ngày:</label>
+                    <input type="date" v-model="ngayHenTraDuKien" :min="minDate" class="form-control w-auto fw-bold text-primary modern-shadow" />
+                </div>
+
                 <!-- Chỗ thao tác mượn -->
                 <div class="d-flex gap-3">
                     <!-- Thông báo lỗi nếu mượn trượt -->
@@ -108,6 +114,12 @@ export default {
 
         const errorMessage = ref(""); // Biến lưu chữ bị lỗi
         const isSubmitting = ref(false); // Biến hiển thị trạng thái nút Mượn đang quay
+        
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+        const minDate = ref(today.toISOString().split('T')[0]);
+        const ngayHenTraDuKien = ref(nextWeek.toISOString().split('T')[0]);
 
         // Lấy thông tin sách từ Backend dựa vào cái ID trên URL
         const getSachData = async (id) => {
@@ -136,6 +148,7 @@ export default {
                 const payload = {
                     maDocGia: currentUser.maDocGia,
                     maSach: sach.value.maSach,
+                    ngayHenTraDuKien: ngayHenTraDuKien.value,
                 };
 
                 const taoPhieu = await theodoiService.yeuCauMuon(payload);
@@ -157,7 +170,7 @@ export default {
             getSachData(route.params.id);
         });
 
-        return { sach, errorMessage, isSubmitting, muonNgay };
+        return { sach, errorMessage, isSubmitting, muonNgay, ngayHenTraDuKien, minDate };
     },
 };
 </script>

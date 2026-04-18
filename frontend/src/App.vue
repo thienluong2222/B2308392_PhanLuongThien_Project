@@ -1,12 +1,9 @@
 <template>
     <div id="app-container">
-        <!-- ================= TRẠNG THÁI 1: TRANG ĐĂNG NHẬP ADMIN ================= -->
-        <!-- Sống biệt lập, không có Navbar ولا Sidebar -->
         <div v-if="isLoginAdminRoute">
             <router-view></router-view>
         </div>
 
-        <!-- ================= TRẠNG THÁI 2: LAYOUT ĐỘC GIẢ (Top Navbar) ================= -->
         <div v-else-if="!isAdminRoute">
             <nav
                 class="navbar navbar-expand-lg navbar-light bg-white modern-shadow py-3 mb-4"
@@ -72,8 +69,7 @@
                                 <router-link
                                     to="/profile"
                                     class="btn btn-light border fw-medium modern-radius me-2"
-                                    ><i class="bi bi-person-circle me-1"></i> Hồ
-                                    Sơ</router-link
+                                    ><i class="bi bi-person-circle me-1"></i> Profile</router-link
                                 >
                                 <button
                                     @click="dangXuat"
@@ -92,7 +88,6 @@
             </div>
         </div>
 
-        <!-- ================= TRẠNG THÁI 3: LAYOUT ADMIN (Sidebar trái) ================= -->
         <div v-else class="d-flex" id="wrapper">
             <div
                 class="bg-white border-end sidebar"
@@ -101,7 +96,7 @@
                 <div
                     class="sidebar-heading text-primary fw-bold text-center py-4 fs-4 border-bottom"
                 >
-                    <i class="bi bi-box-seam-fill me-2"></i>Admin CPL
+                    <i class="bi bi-box-seam-fill me-2"></i>Admin Page
                 </div>
                 <div class="list-group list-group-flush px-3 mt-3">
                     <router-link
@@ -109,7 +104,7 @@
                         class="list-group-item list-group-item-action rounded-3 mb-2"
                         exact-active-class="active"
                     >
-                        <i class="bi bi-speedometer2 me-3"></i> Bảng điều khiển
+                        <i class="bi bi-speedometer2 me-3"></i> Dashboard
                     </router-link>
                     <router-link
                         to="/admin/sach"
@@ -143,7 +138,7 @@
                 </div>
             </div>
 
-            <!-- Vùng hiển thị Router View cho Admin -->
+
             <div
                 id="page-content-wrapper"
                 class="w-100"
@@ -168,12 +163,10 @@ export default {
         const router = useRouter();
         const route = useRoute();
 
-        // 1. Kiểm tra xem cõ phải màn hình Đăng Nhập cho Admin không
         const isLoginAdminRoute = computed(() => {
             return route.path === "/admin-login";
         });
 
-        // 2. Chặn điều kiện đúng cho Admin: Url chứa chữ `/admin` nhưng KHÔNG PHẢI là trang login.
         const isAdminRoute = computed(() => {
             return (
                 route.path.startsWith("/admin") && route.path !== "/admin-login"
@@ -190,7 +183,6 @@ export default {
             router.push("/login");
         };
 
-        // Quan trọng: Trả về để <template> xài được!
         return { currentUser, dangXuat, isLoginAdminRoute, isAdminRoute };
     },
 };

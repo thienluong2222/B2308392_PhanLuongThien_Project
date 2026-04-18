@@ -15,8 +15,8 @@
                     <thead class="table-light text-muted">
                         <tr>
                             <th>Mã Phiếu</th>
-                            <th>Mã Sách</th>
-                            <th>Ngày Mượn</th>
+                            <th>Tên Sách</th>
+                            <th>Ngày Trả</th>
                             <th>Trạng Thái</th>
                             <th>Thao Tác</th>
                         </tr>
@@ -27,16 +27,19 @@
                                 #{{ phieu._id.substring(phieu._id.length - 6) }}
                             </td>
                             <td class="fw-bold text-dark">
-                                {{ phieu.maSach }}
+                                {{ phieu.tenSach || phieu.maSach }}
                             </td>
                             <td>
-                                {{
-                                    phieu.ngayMuon
-                                        ? new Date(
-                                              phieu.ngayMuon,
-                                          ).toLocaleDateString("vi-VN")
-                                        : "Chưa có"
-                                }}
+                                <div>
+                                    <span v-if="phieu.ngayTra" class="text-success fw-bold">{{ new Date(phieu.ngayTra).toLocaleDateString("vi-VN") }}</span>
+                                    <span v-else-if="phieu.hanTra" class="text-muted">Hạn: {{ new Date(phieu.hanTra).toLocaleDateString("vi-VN") }}</span>
+                                    <span v-else class="text-muted">Chưa có</span>
+                                </div>
+                                <div 
+                                    v-if="(phieu.trangThai === 4 && phieu.ngayTra && phieu.hanTra && new Date(phieu.ngayTra) > new Date(phieu.hanTra)) || ((phieu.trangThai === 1 || phieu.trangThai === 3) && phieu.hanTra && new Date() > new Date(phieu.hanTra))" 
+                                    class="text-danger fw-bold mt-1" style="font-size: 0.75rem;">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> TRỄ HẠN (PHẠT)
+                                </div>
                             </td>
 
                             <!-- Hiển thị Trạng thái (0: Chờ duyệt, 1: Đang mượn, 2: Bị từ chối, 3: Chờ nhận trả, 4: Đã trả xong) -->
@@ -44,7 +47,7 @@
                                 <span
                                     v-if="phieu.trangThai === 0"
                                     class="badge bg-warning text-dark py-2 px-3"
-                                    >Chờ Admin Duyệt</span
+                                    >Chờ Duyệt</span
                                 >
                                 <span
                                     v-else-if="phieu.trangThai === 1"
@@ -54,16 +57,17 @@
                                 <span
                                     v-else-if="phieu.trangThai === 2"
                                     class="badge bg-danger py-2 px-3"
-                                    >Bị Từ Chối</span
+                                    >Từ Chối</span
                                 >
                                 <span
                                     v-else-if="phieu.trangThai === 3"
                                     class="badge bg-info text-dark py-2 px-3"
-                                    >Chờ Nhận Lại Sách</span
+                                    >Chờ Trả</span
                                 >
                                 <span v-else class="badge bg-success py-2 px-3"
-                                    >Đã Trả Xong</span
+                                    >Đã Trả</span
                                 >
+                                
                             </td>
 
                             <!-- Nút Thao tác (Chỉ hiện nút "Xin Trả" khi sách Đang Mượn TrangThai == 1) -->

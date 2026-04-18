@@ -50,7 +50,7 @@ exports.login = async (req, res, next) => {
         }
 
         // 3. Tạo Token (thêm thông tin role: "docgia" để sau này phân biệt với nhân viên)
-        const secretKey = "chuoi_bi_mat_cua_ban"; // Nên giữ giống secretKey bên nhân viên
+        const secretKey = "thien_dep_trai"; // Nên giữ giống secretKey bên nhân viên
         const token = jwt.sign(
             { id: docGia._id, tenTaiKhoan: docGia.tenTaiKhoan, role: "docgia" },
             secretKey,

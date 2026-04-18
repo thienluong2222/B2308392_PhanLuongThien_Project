@@ -19,10 +19,14 @@ class TheoDoiService {
         return (await this.api.put(`/${id}/yeu-cau-tra`)).data;
     }
 
-    async duyetMuon(id, msnv, isDuyet) {
-        return (await this.api.put(`/${id}/duyet-muon`, { msnv, isDuyet })).data;
+    async duyetMuon(id, msnv, isDuyet, hanTraMoi) {
+        return (await this.api.put(`/${id}/duyet-muon`, { msnv, isDuyet, hanTraMoi })).data;
     }
     
+    async giaHan(id, hanTraMoi) {
+        return (await this.api.put(`/${id}/gia-han`, { hanTraMoi })).data;
+    }
+
     async duyetTra(id, msnv) {
         return (await this.api.put(`/${id}/duyet-tra`, { msnv })).data;
     }
